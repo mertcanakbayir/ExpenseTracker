@@ -1,59 +1,60 @@
 ﻿using System.Linq.Expressions;
+using AutoMapper;
 using Core.Business;
 using Core.DAL;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business.Concrete
 {
-    public class BaseService<T> : IBaseService<T> where T : class
+    public class BaseService<TDto, TEntity> : IBaseService<TDto, TEntity>
+        where TDto : class
+        where TEntity : class
     {
-        private readonly IBaseRepository<T> _baseRepository;
-        public BaseService(IBaseRepository<T> baseRepository)
+        private readonly IBaseRepository<TEntity> _baseRepository;
+        private readonly IMapper _mapper;
+
+        public BaseService(IBaseRepository<TEntity> baseRepository, IMapper mapper)
         {
             _baseRepository = baseRepository;
+            _mapper = mapper;
         }
-        public void Add(T entity)
-        {
-            if (entity == null) throw new ArgumentNullException("Eklenmek istenen öğe null olamaz!");
 
+        public void Add(TDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException("Eklenmek istenen öğe null olamaz!");
+            var entity = _mapper.Map<TEntity>(dto);
             _baseRepository.Add(entity);
         }
 
-        public void Delete(T entity)
+        public void Delete(Guid id)
         {
-
-            if (entity == null) throw new ArgumentNullException("Silinmek istenen öğe null olamaz");
-
-            if (!Exists(e => e == entity))
-                throw new KeyNotFoundException("Silinecek nesne bulunamadı.");
+            var entity = _baseRepository.Get(e => EF.Property<Guid>(e, "Id") == id);
+            if (entity == null) throw new KeyNotFoundException("Silinecek nesne bulunamadı.");
             _baseRepository.Delete(entity);
         }
 
-        public bool Exists(Expression<Func<T, bool>> filter)
+        public bool Exists(Expression<Func<TEntity, bool>> filter)
         {
-            if (filter == null)
-            {
-                throw new KeyNotFoundException("Nesne bulunamadı");
-            }
             return _baseRepository.Exists(filter);
         }
 
-        public T Get(Expression<Func<T, bool>> filter)
+        public TDto Get(Expression<Func<TEntity, bool>> filter)
         {
-            if (filter == null) throw new KeyNotFoundException("Aranan nesne bulunamadı.");
-            return _baseRepository.Get(filter);
+            var entity = _baseRepository.Get(filter);
+            if (entity == null) throw new KeyNotFoundException("Aranan nesne bulunamadı.");
+            return _mapper.Map<TDto>(entity);
         }
 
-        public List<T> GetAll(Expression<Func<T, bool>> filter = null)
+        public List<TDto> GetAll(Expression<Func<TEntity, bool>> filter = null)
         {
-            return _baseRepository.GetAll(filter).ToList();
-
+            var entities = _baseRepository.GetAll(filter);
+            return _mapper.Map<List<TDto>>(entities);
         }
 
-        public void Update(T entity)
+        public void Update(TDto dto)
         {
-            if (entity == null) throw new ArgumentNullException("Güncellenmek istenen öğe null olamaz");
-            if (!Exists(e => e == entity))
-                throw new KeyNotFoundException("Güncellenecek nesne bulunamadı.");
+            if (dto == null) throw new ArgumentNullException("Güncellenmek istenen öğe null olamaz");
+            var entity = _mapper.Map<TEntity>(dto);
             _baseRepository.Update(entity);
         }
     }

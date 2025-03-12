@@ -11,8 +11,8 @@
 
         public Guid RoleId { get; set; }
 
-        public Role Role { get; set; }
+        public virtual Role Role { get; set; }
 
-        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+        public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     }
 }

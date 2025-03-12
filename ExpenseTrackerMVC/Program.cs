@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 // DbContext kaydý (Connection string appsettings.json'dan okunur)
 builder.Services.AddDbContext<ExpenseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+     .LogTo(Console.WriteLine, LogLevel.Information)
 );
 
 

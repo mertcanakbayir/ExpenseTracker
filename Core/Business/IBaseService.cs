@@ -2,18 +2,20 @@
 
 namespace Core.Business
 {
-    public interface IBaseService<T> where T : class
+    public interface IBaseService<TDto,TEntity> 
+        where TDto : class 
+        where TEntity : class
     {
-        void Add(T entity);
+        void Add(TDto entity);
 
-        void Update(T entity);
+        void Update(TDto entity);
 
-        void Delete(T entity);
+        void Delete(Guid id);
 
-        List<T> GetAll(Expression<Func<T,bool>> filter=null!);
+        List<TDto> GetAll(Expression<Func<TEntity,bool>> filter=null!);
 
-        T Get(Expression<Func<T,bool>> filter);
+        TDto Get(Expression<Func<TEntity,bool>> filter);
 
-        bool Exists(Expression<Func<T,bool>> filter);
+        bool Exists(Expression<Func<TEntity,bool>> filter);
     }
 }

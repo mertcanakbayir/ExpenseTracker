@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Business.Abstract;
+using Core.DTOs;
 using DAL.Abstract;
 using Entities.Concrete;
 
@@ -12,15 +13,31 @@ namespace Business.Concrete
         {
             _userRepository = userRepository;
         }
-        public void Add(User entity)
+
+        public void Add(UserDto userDto)
         {
-            if (entity == null) {
-                throw new ArgumentNullException("Kullanıcı boş olamaz");
+            if (userDto == null)
+            {
+                throw new ArgumentNullException("Kullanıcı bilgileri boş olamaz");
             }
-            _userRepository.Add(entity);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = userDto.Username,
+                Email = userDto.Email,
+                PasswordHash = System.Text.Encoding.UTF8.GetBytes("123456"), // Sabit şifre değeri
+                PasswordSalt = new byte[0], // Geçici olarak boş salt
+                RoleId = userDto.RoleId,
+                IsActive = true,
+                CreateDate = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow
+            };
+
+            _userRepository.Add(user);
         }
 
-        public void Delete(User entity)
+        public void Delete(Guid id)
         {
             if (entity == null)
             {
@@ -31,16 +48,17 @@ namespace Business.Concrete
 
         public bool Exists(Expression<Func<User, bool>> filter)
         {
-            throw new NotImplementedException();
+            return _userRepository.Exists(filter);
         }
 
         public User Get(Expression<Func<User, bool>> filter)
         {
-            if (_userRepository.Exists(filter))
+            var user = _userRepository.Get(filter);
+            if (user == null)
             {
-                return _userRepository.Get(filter);
+                throw new InvalidOperationException("Kullanıcı bulunamadı!");
             }
-            throw new InvalidOperationException("Kullanıcı bulunamadı!");
+            return user;
         }
 
         public List<User> GetAll(Expression<Func<User, bool>> filter = null)
@@ -48,13 +66,24 @@ namespace Business.Concrete
             return _userRepository.GetAll(filter);
         }
 
-        public void Update(User entity)
+        public void Update(UserDto userDto)
         {
-            if (entity == null)
+            if (userDto == null)
             {
-                throw new ArgumentNullException("Kullanıcı boş olamaz");
+                throw new ArgumentNullException("Kullanıcı bilgileri boş olamaz");
             }
-            _userRepository.Update(entity);
+
+            var existingUser = _userRepository.Get(u => u.Email == userDto.Email);
+            if (existingUser == null)
+            {
+                throw new InvalidOperationException("Güncellenecek kullanıcı bulunamadı");
+            }
+
+            existingUser.Username = userDto.Username;
+            existingUser.RoleId = userDto.RoleId;
+            existingUser.UpdateDate = DateTime.UtcNow;
+
+            _userRepository.Update(existingUser);
         }
     }
 }
