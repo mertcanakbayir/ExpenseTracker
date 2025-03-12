@@ -1,12 +1,11 @@
-﻿using System.Linq.Expressions;
+﻿    using System.Linq.Expressions;
 using AutoMapper;
-using Core.Business;
 using Core.DAL;
 using Microsoft.EntityFrameworkCore;
 
-namespace Business.Concrete
+namespace Core.Business
 {
-    public class BaseService<TDto, TEntity> : IBaseService<TDto, TEntity>
+    public class BaseService<TDto, TEntity> : IBaseService<TDto,TEntity>
         where TDto : class
         where TEntity : class
     {
@@ -19,17 +18,30 @@ namespace Business.Concrete
             _mapper = mapper;
         }
 
-        public void Add(TDto dto)
+        public virtual void Add(TDto dto)
         {
-            if (dto == null) throw new ArgumentNullException("Eklenmek istenen öğe null olamaz!");
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "Eklenecek nesne boş olamaz.");
+
             var entity = _mapper.Map<TEntity>(dto);
+
             _baseRepository.Add(entity);
+        }
+
+        public virtual void Update(TDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto), "Güncellenecek nesne boş olamaz.");
+
+            var entity = _mapper.Map<TEntity>(dto);
+            _baseRepository.Update(entity);
         }
 
         public void Delete(Guid id)
         {
             var entity = _baseRepository.Get(e => EF.Property<Guid>(e, "Id") == id);
-            if (entity == null) throw new KeyNotFoundException("Silinecek nesne bulunamadı.");
+            if (entity == null)
+                throw new KeyNotFoundException("Silinecek nesne bulunamadı.");
             _baseRepository.Delete(entity);
         }
 
@@ -41,7 +53,8 @@ namespace Business.Concrete
         public TDto Get(Expression<Func<TEntity, bool>> filter)
         {
             var entity = _baseRepository.Get(filter);
-            if (entity == null) throw new KeyNotFoundException("Aranan nesne bulunamadı.");
+            if (entity == null)
+                throw new KeyNotFoundException("Aranan nesne bulunamadı.");
             return _mapper.Map<TDto>(entity);
         }
 
@@ -51,11 +64,12 @@ namespace Business.Concrete
             return _mapper.Map<List<TDto>>(entities);
         }
 
-        public void Update(TDto dto)
+        public virtual void AddEntity(TEntity entity)
         {
-            if (dto == null) throw new ArgumentNullException("Güncellenmek istenen öğe null olamaz");
-            var entity = _mapper.Map<TEntity>(dto);
-            _baseRepository.Update(entity);
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity), "Eklenecek nesne boş olamaz.");
+
+            _baseRepository.Add(entity);
         }
     }
 }

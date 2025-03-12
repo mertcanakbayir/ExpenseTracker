@@ -4,6 +4,7 @@ using DAL.Abstract;
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using DAL.Concrete;
+using Business.MappingProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +18,7 @@ builder.Services.AddDbContext<ExpenseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
      .LogTo(Console.WriteLine, LogLevel.Information)
 );
-
-
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 // Diðer servisler...
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();

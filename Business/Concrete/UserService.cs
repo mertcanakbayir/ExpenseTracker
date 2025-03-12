@@ -1,89 +1,46 @@
-﻿using System.Linq.Expressions;
+﻿using AutoMapper;
 using Business.Abstract;
+using Core.Business;
 using Core.DTOs;
+using Core.Utilities;
 using DAL.Abstract;
 using Entities.Concrete;
 
 namespace Business.Concrete
 {
-    public class UserService : IUserService
+    public class UserService:BaseService<UserDto,User>,IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository,IMapper mapper):base(userRepository,mapper) {
+            
+        _userRepository = userRepository;
+            _mapper = mapper;
         }
 
-        public void Add(UserDto userDto)
+        public override void Add(UserDto dto)
         {
-            if (userDto == null)
+            if (_userRepository.Exists(u => u.Email == dto.Email))
             {
-                throw new ArgumentNullException("Kullanıcı bilgileri boş olamaz");
+                throw new InvalidOperationException("Bu email zaten kayıtlı.");
             }
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Username = userDto.Username,
-                Email = userDto.Email,
-                PasswordHash = System.Text.Encoding.UTF8.GetBytes("123456"), // Sabit şifre değeri
-                PasswordSalt = new byte[0], // Geçici olarak boş salt
-                RoleId = userDto.RoleId,
-                IsActive = true,
-                CreateDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow
-            };
-
-            _userRepository.Add(user);
+            HashingHelper.CreatePassword(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var userEntity=_mapper.Map<User>(dto);
+            userEntity.PasswordHash = passwordHash;
+            userEntity.PasswordSalt = passwordSalt;
+            base.AddEntity(userEntity);
         }
 
-        public void Delete(Guid id)
+        public override void Update(UserDto dto)
         {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("Kullanıcı boş olamaz");
-            }
-            _userRepository.Delete(entity);
-        }
-
-        public bool Exists(Expression<Func<User, bool>> filter)
-        {
-            return _userRepository.Exists(filter);
-        }
-
-        public User Get(Expression<Func<User, bool>> filter)
-        {
-            var user = _userRepository.Get(filter);
-            if (user == null)
-            {
-                throw new InvalidOperationException("Kullanıcı bulunamadı!");
-            }
-            return user;
-        }
-
-        public List<User> GetAll(Expression<Func<User, bool>> filter = null)
-        {
-            return _userRepository.GetAll(filter);
-        }
-
-        public void Update(UserDto userDto)
-        {
-            if (userDto == null)
-            {
-                throw new ArgumentNullException("Kullanıcı bilgileri boş olamaz");
-            }
-
-            var existingUser = _userRepository.Get(u => u.Email == userDto.Email);
+            var existingUser=_userRepository.Get(u=>u.Email == dto.Email);
             if (existingUser == null)
             {
-                throw new InvalidOperationException("Güncellenecek kullanıcı bulunamadı");
+                throw new KeyNotFoundException("Güncellenecek kullanıcı bulunamadı.");
             }
-
-            existingUser.Username = userDto.Username;
-            existingUser.RoleId = userDto.RoleId;
-            existingUser.UpdateDate = DateTime.UtcNow;
-
-            _userRepository.Update(existingUser);
+            base.Update(dto);
         }
+
     }
 }

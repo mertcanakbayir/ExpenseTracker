@@ -6,9 +6,9 @@ namespace Core.Business
         where TDto : class 
         where TEntity : class
     {
-        void Add(TDto entity);
+        void Add(TDto dto);
 
-        void Update(TDto entity);
+        void Update(TDto dto);
 
         void Delete(Guid id);
 
@@ -17,5 +17,7 @@ namespace Core.Business
         TDto Get(Expression<Func<TEntity,bool>> filter);
 
         bool Exists(Expression<Func<TEntity,bool>> filter);
+
+         void AddEntity(TEntity entity);
     }
 }

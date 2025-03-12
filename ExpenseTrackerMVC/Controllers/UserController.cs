@@ -1,5 +1,5 @@
 ﻿using Business.Abstract;
-using Entities.Concrete;
+using Core.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExpenseTrackerMVC.Controllers
@@ -8,73 +8,103 @@ namespace ExpenseTrackerMVC.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService; // Interface üzerinden bağımlılık
+        private readonly IUserService _userService;
 
-        public UserController(IUserService userService) // Dependency Injection
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(Guid id)
+        [HttpPost]
+        public IActionResult Add([FromBody] UserDto userDto)
+        {
+            try
+            {
+                _userService.Add(userDto);
+                return Ok("Kullanıcı başarıyla eklendi.");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);  // BaseService'de kontrol edildiği için buraya düşer.
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+            }
+
+        }
+
+        [HttpGet("get/{id}")]
+        public IActionResult Get(Guid id)
         {
             try
             {
                 var user = _userService.Get(u => u.Id == id);
                 return Ok(user);
             }
-            catch (InvalidOperationException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound("Kullanıcı bulunamadı");
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
             }
         }
 
-        [HttpGet]
+        [HttpGet("getAll")]
         public IActionResult GetAll()
         {
-            var users = _userService.GetAll();
-            return Ok(users);
+            try
+            {
+                var users = _userService.GetAll();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+            }
         }
 
-        [HttpPost]
-        public IActionResult Add([FromBody] User user)
+        [HttpPut("update")]
+        public IActionResult Update([FromBody] UserDto userDto)
         {
             try
             {
-                _userService.Add(user);
-                return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+                _userService.Update(userDto);
+                return Ok("Kullanıcı başarıyla güncellendi.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Update(Guid id, [FromBody] User user)
-        {
-            try
+            catch (Exception ex)
             {
-                _userService.Update(user);
-                return NoContent();
-            }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult Delete(Guid id)
         {
-            var user = _userService.Get(u => u.Id == id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                _userService.Delete(id);
+                return Ok("Kullanıcı başarıyla silindi.");
             }
-
-            _userService.Delete(user);
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+            }
         }
+
     }
 }
