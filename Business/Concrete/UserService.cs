@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Business.Abstract;
-using Core.Business;
+﻿using Business.Abstract;
 using Core.DTOs;
 using Core.Utilities;
 using DAL.Abstract;
@@ -8,38 +6,90 @@ using Entities.Concrete;
 
 namespace Business.Concrete
 {
-    public class UserService:BaseService<UserDto,User>,IUserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        public UserService(IUserRepository userRepository,IMapper mapper):base(userRepository,mapper) {
-            
-        _userRepository = userRepository;
-            _mapper = mapper;
-        }
 
-        public override void Add(UserDto dto)
+        public UserService(IUserRepository userRepository)
         {
-            if (_userRepository.Exists(u => u.Email == dto.Email))
+            _userRepository = userRepository;
+        }
+        public void Add(UserDto userDto)
+        {
+            if (string.IsNullOrWhiteSpace(userDto.Password))
+                throw new ArgumentException("Şifre boş olamaz!");
+
+            HashingHelper.CreatePassword(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            var user = new User
             {
-                throw new InvalidOperationException("Bu email zaten kayıtlı.");
-            }
+                Id = Guid.NewGuid(),
+                Username = userDto.Username,
+                Email = userDto.Email,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                RoleId = userDto.RoleId
+            };
 
-            HashingHelper.CreatePassword(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            var userEntity=_mapper.Map<User>(dto);
-            userEntity.PasswordHash = passwordHash;
-            userEntity.PasswordSalt = passwordSalt;
-            base.AddEntity(userEntity);
+            _userRepository.Add(user);
         }
 
-        public override void Update(UserDto dto)
+        public void Update(Guid id, UserDto userDto)
         {
-            var existingUser=_userRepository.Get(u=>u.Email == dto.Email);
+            var existingUser = _userRepository.Get(u=>u.Id==id);
             if (existingUser == null)
+                throw new Exception("Kullanıcı bulunamadı!");
+
+            existingUser.Username = userDto.Username;
+            existingUser.Email = userDto.Email;
+            existingUser.RoleId = userDto.RoleId;
+
+            if (!string.IsNullOrWhiteSpace(userDto.Password))
             {
-                throw new KeyNotFoundException("Güncellenecek kullanıcı bulunamadı.");
+                HashingHelper.CreatePassword(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                existingUser.PasswordHash = passwordHash;
+                existingUser.PasswordSalt = passwordSalt;
             }
-            base.Update(dto);
+
+            _userRepository.Update(existingUser);
+        }
+
+        public void Delete(Guid id)
+        {
+            var user = _userRepository.Get(u => u.Id == id);
+            if (user == null) throw new Exception("Kullanıcı Bulunamadı!");
+        }
+
+        public UserDto Get(Guid id)
+        {
+            var user = _userRepository.Get(u=>u.Id==id);
+            if (user == null) {
+                return null;
+            }
+
+            return new UserDto
+            {
+                Username = user.Username,
+                Email = user.Email,
+                RoleId = user.RoleId,
+            };
+        }
+
+        public List<UserDto> GetAll()
+        {
+            var users=_userRepository.GetAll();
+            return users.Select(user=>new UserDto
+            {
+                Username=user.Username,
+                Email=user.Email,
+                RoleId=user.RoleId,
+
+            }).ToList();
+        }
+
+        public void Update(UserDto userDto)
+        {
+            throw new NotImplementedException();
         }
 
     }

@@ -1,10 +1,17 @@
-﻿using Core.Business;
-using Core.DTOs;
-using Entities.Concrete;
+﻿using Core.DTOs;
 
 namespace Business.Abstract
 {
-    public interface IUserService:IBaseService<UserDto,User>
+    public interface IUserService
     {
+        void Add(UserDto userDto);
+
+        void Update(Guid id,UserDto userDto);
+
+        void Delete(Guid id);
+
+        List<UserDto> GetAll();
+
+        UserDto Get(Guid id);
     }
 }

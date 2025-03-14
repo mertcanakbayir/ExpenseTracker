@@ -1,4 +1,6 @@
-﻿using Business.Abstract;
+﻿using System;
+using Business.Abstract;
+using Business.Concrete;
 using Core.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +17,24 @@ namespace ExpenseTrackerMVC.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
+        [HttpGet("getAll")]
+        public IActionResult GetAll()
+        {
+            var users = _userService.GetAll();
+            return Ok(users);
+        }
+
+        [HttpGet("get/{id}")]
+        public IActionResult Get(Guid id)
+        {
+            var user = _userService.Get(id);
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            return Ok(user);
+        }
+
+        [HttpPost("add")]
         public IActionResult Add([FromBody] UserDto userDto)
         {
             try
@@ -23,68 +42,23 @@ namespace ExpenseTrackerMVC.Controllers
                 _userService.Add(userDto);
                 return Ok("Kullanıcı başarıyla eklendi.");
             }
-            catch (ArgumentNullException ex)
-            {
-                return BadRequest(ex.Message);  // BaseService'de kontrol edildiği için buraya düşer.
-            }
             catch (Exception ex)
-            {
-                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
-            }
-
-        }
-
-        [HttpGet("get/{id}")]
-        public IActionResult Get(Guid id)
-        {
-            try
-            {
-                var user = _userService.Get(u => u.Id == id);
-                return Ok(user);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
-            }
-        }
-
-        [HttpGet("getAll")]
-        public IActionResult GetAll()
-        {
-            try
-            {
-                var users = _userService.GetAll();
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
-            }
-        }
-
-        [HttpPut("update")]
-        public IActionResult Update([FromBody] UserDto userDto)
-        {
-            try
-            {
-                _userService.Update(userDto);
-                return Ok("Kullanıcı başarıyla güncellendi.");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPut("update/{id}")]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UserDto userDto)
+        {
+            try
+            {
+                _userService.Update(id, userDto);
+                return Ok("Kullanıcı başarıyla güncellendi.");
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -96,13 +70,9 @@ namespace ExpenseTrackerMVC.Controllers
                 _userService.Delete(id);
                 return Ok("Kullanıcı başarıyla silindi.");
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+                return BadRequest(ex.Message);
             }
         }
 

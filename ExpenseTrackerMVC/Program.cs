@@ -4,7 +4,6 @@ using DAL.Abstract;
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using DAL.Concrete;
-using Business.MappingProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,16 +12,14 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddSwaggerGen();
-// DbContext kaydý (Connection string appsettings.json'dan okunur)
 builder.Services.AddDbContext<ExpenseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-     .LogTo(Console.WriteLine, LogLevel.Information)
 );
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-// Diðer servisler...
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

@@ -25,9 +25,10 @@ namespace DAL
                 entity.Property(u=>u.PasswordSalt).IsRequired();
 
                 entity.HasOne(u => u.Role)
-                .WithOne()
-                .HasForeignKey<User>(u => u.RoleId)
+                .WithMany(r => r.Users) // Bir rolün birden fazla kullanıcısı olabilir
+                .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.NoAction);
+
             });
 
             modelBuilder.Entity<Expense>(entity =>
