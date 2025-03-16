@@ -1,0 +1,26 @@
+﻿@model Core.DTOs.RegisterDto
+
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<h2>Kayıt Ol</h2>
+
+<form asp-action="Register" asp-controller="Auth" method="post">
+
+    <div class="form-group">
+        <label>Username:</label>
+        <input type="text" asp-for="Username" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="email" asp-for="Email" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Şifre:</label>
+        <input type="password" asp-for="Password" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-success">Kayıt Ol</button>
+</form>
+
+<p>Zaten hesabınız var mı? <a asp-action="Login" asp-controller="Auth">Giriş Yap</a></p>

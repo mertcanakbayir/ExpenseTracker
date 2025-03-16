@@ -1,5 +1,6 @@
 ﻿using Business.Abstract;
 using Core.DTOs;
+using Core.Security.JWT;
 using Core.Utilities;
 using DAL.Abstract;
 using Entities.Concrete;
@@ -10,26 +11,33 @@ namespace Business.Concrete
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        public AuthService(IUserRepository userRepository)
+        private readonly ITokenHelper _tokenHelper;
+        public AuthService(IUserRepository userRepository,ITokenHelper tokenHelper)
         {
             _userRepository = userRepository;
+            _tokenHelper = tokenHelper;
+
         }
-        public string Login(LoginDto loginDto)
+        public AccessToken Login(LoginDto loginDto)
         {
-            var user=_userRepository.Get(u=>u.Email==loginDto.Email);
+            var user = _userRepository.Get(u => u.Email == loginDto.Email);
             if (user == null)
             {
-                return "Kullanıcı sistemde kayıtlı değil.";
+                throw new Exception("Kullanıcı sistemde kayıtlı değil.");
             }
 
             var result = HashingHelper.VerifyPasswordHash(loginDto.Password, user.PasswordHash, user.PasswordSalt);
-            if (!result) {
-                return "Kullanıcı adı veya şifre yanlış.";
+            if (!result)
+            {
+                throw new Exception("Kullanıcı adı veya şifre yanlış.");
             }
 
-            return "Giriş yapıldı.";
+            var token = _tokenHelper.CreateToken(user.Id, user.Email, user.RoleId.ToString());
 
+            return token;
+        
         }
+
 
         public string Register(RegisterDto registerDto)
         {

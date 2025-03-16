@@ -1,0 +1,21 @@
+﻿@model Core.DTOs.LoginDto
+
+@{
+    ViewData["Title"] = "Kullanıcı Girişi";
+}
+
+<h2>Giriş Yap</h2>
+
+<form asp-action="Login" asp-controller="Auth" method="post">
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="email" asp-for="Email" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Şifre:</label>
+        <input type="password" asp-for="Password" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Giriş Yap</button>
+</form>
+
+<p>Hesabınız yok mu? <a asp-action="Register" asp-controller="Auth">Kayıt Ol</a></p>

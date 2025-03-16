@@ -6,7 +6,7 @@ namespace ExpenseTrackerMVC.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : Controller
     {
         private readonly IAuthService _authService;
 
@@ -15,26 +15,36 @@ namespace ExpenseTrackerMVC.Controllers
             _authService = authService;
         }
 
+        [HttpGet("login")]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
         [HttpPost("login")]
-        public IActionResult Login(LoginDto loginDto) {
+        public IActionResult Login([FromForm] LoginDto loginDto)
+        {
             try
             {
-                var result = _authService.Login(loginDto);
-                if (result == "Giriş yapıldı.")
-                {
-                    return Ok(result);
-                }
-                return BadRequest();
+                var token = _authService.Login(loginDto);
+                return Ok(token);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
-      
+        }
+
+
+
+        [HttpGet("register")]
+        public IActionResult Register()
+        {
+            return View();
         }
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterDto registerDto) {
+        public IActionResult Register([FromForm]RegisterDto registerDto) {
 
             try
             {

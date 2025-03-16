@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.Security.JWT;
 
 namespace Business.Abstract
 {
@@ -6,7 +7,7 @@ namespace Business.Abstract
     {
         string Register(RegisterDto registerDto);
 
-        string Login(LoginDto loginDto);
+        AccessToken Login(LoginDto loginDto);
 
 
     }
