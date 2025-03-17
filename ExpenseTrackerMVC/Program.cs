@@ -36,17 +36,25 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseSwagger();
-app.UseSwaggerUI();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Auth}/{action=Login}/{id?}")
     .WithStaticAssets();
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/Auth/Login");
+        return;
+    }
+    await next();
+});
 
 
 app.Run();
