@@ -1,10 +1,8 @@
-﻿using System;
-using Business.Abstract;
-using Business.Concrete;
+﻿using Business.Abstract;
 using Core.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ExpenseTrackerMVC.Controllers
+namespace ExpenseTrackerMVC.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]

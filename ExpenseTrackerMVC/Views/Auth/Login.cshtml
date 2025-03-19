@@ -38,18 +38,21 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ email:email, password:password })
-            });
+            })
+
+       
 
             const responseData = await response.json(); // Hata mesajlarını yakalamak için ekledik
 
             if (!response.ok) {
                 console.error("Sunucudan gelen hata:", responseData);
                 throw new Error(responseData.error || "Kullanıcı adı veya şifre yanlış.");
+                
             }
 
             console.log("Başarılı Giriş:", responseData);
-            sessionStorage.setItem("token", responseData.token);
-            sessionStorage.setItem("tokenExpiration", responseData.expiration);
+            localStorage.setItem("token", responseData.token);
+            localStorage.setItem("tokenExpiration", responseData.expiration);
 
             alert("Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...");
             window.location.href = "/Home/Index";

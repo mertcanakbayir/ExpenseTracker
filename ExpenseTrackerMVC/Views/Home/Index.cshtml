@@ -5,3 +5,36 @@
 <div class="text-center">
    <h1>Burası Ana Sayfa</h1>
 </div>
+
+<script>
+    // Tüm fetch isteklerine token eklemek için interceptor
+    const originalFetch = window.fetch;
+    window.fetch = async function (url, options = {}) {
+        const token = localStorage.getItem("token");
+
+        // Header'ları ayarla
+        if (token) {
+            options.headers = {
+                ...options.headers,
+                "Authorization": `Bearer ${token}`
+            };
+        }
+
+        const response = await originalFetch(url, options);
+
+        // 401 Unauthorized hatasını yakala
+        if (response.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "/Auth/Login";
+        }
+
+        return response;
+    };
+
+    // Sayfa yüklendiğinde token kontrolü
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!localStorage.getItem("token")) {
+            window.location.href = "/Auth/Login";
+        }
+    });
+</script>
