@@ -29,7 +29,17 @@ namespace ExpenseTrackerMVC.Controllers.Api
                 return Unauthorized(new { message = "Geçersiz kullanıcı adı veya şifre." });
             }
 
-            return Ok(new { Token = token.Token, Expiration = token.Expiration });
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,  // HTTPS zorunlu
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(2)
+            };
+
+            Response.Cookies.Append("AuthToken", token.Token, cookieOptions);
+
+            return Ok(new { Message="Login Succesful."});
         }
 
         [HttpPost("register")]

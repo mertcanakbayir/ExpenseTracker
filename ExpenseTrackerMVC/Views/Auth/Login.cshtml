@@ -40,8 +40,6 @@
                 body: JSON.stringify({ email:email, password:password })
             })
 
-       
-
             const responseData = await response.json(); // Hata mesajlarını yakalamak için ekledik
 
             if (!response.ok) {
@@ -49,11 +47,7 @@
                 throw new Error(responseData.error || "Kullanıcı adı veya şifre yanlış.");
                 
             }
-
-            console.log("Başarılı Giriş:", responseData);
-            localStorage.setItem("token", responseData.token);
-            localStorage.setItem("tokenExpiration", responseData.expiration);
-
+            console.log("Giriş Başarılı");
             alert("Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...");
             window.location.href = "/Home/Index";
         } catch (error) {

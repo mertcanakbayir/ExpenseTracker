@@ -1,10 +1,10 @@
-using Business.Abstract;
+﻿using Business.Abstract;
 using Business.Concrete;
 using DAL.Abstract;
 using DAL;
-using Microsoft.EntityFrameworkCore;
 using DAL.Concrete;
 using Core.Security.JWT;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -13,24 +13,46 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-
 builder.Services.AddSwaggerGen();
+
+// Database Context
 builder.Services.AddDbContext<ExpenseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// JWT Configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenHelper, TokenHelper>();
 
+// JWT Authentication with HttpOnly Cookie
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("AuthToken")) 
+                {
+                    context.Token = context.Request.Cookies["AuthToken"];
+                }
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.Redirect("/Auth/Login");
+                }
+                context.HandleResponse(); // Varsayılan 401 yanıtını engelle
+                return Task.CompletedTask;
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -44,40 +66,45 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddCors(options => {
-    options.AddPolicy("AllowClient", policy => {
-        policy.WithOrigins("https://localhost:7203") // Client URL'nizi yaz�n
+
+// CORS Configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy.WithOrigins("https://localhost:7203") // Client URL
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // Token ile istekler i�in gerekli
+              .AllowCredentials(); // HttpOnly Cookie desteği için gerekli!
     });
 });
-
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    //app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseCors("AllowClient"); // CORS Middleware
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.UseCors();
-
+// Default route configuration
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}")
     .WithStaticAssets();
+
+// Redirect root URL to Login page
 app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/")
@@ -87,6 +114,5 @@ app.Use(async (context, next) =>
     }
     await next();
 });
-
 
 app.Run();
