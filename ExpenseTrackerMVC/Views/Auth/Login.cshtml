@@ -18,8 +18,7 @@
     </div>
     <button type="submit" class="btn btn-primary">Giriş Yap</button>
 </form>
-
-<p>Hesabınız yok mu? <a asp-action="Register" asp-controller="Auth">Kayıt Ol</a></p>
+<p>Hesabınız yok mu? <a href="/Auth/Register">Kayıt Ol</a></p>
 
 <!-- JavaScript kodlarını buraya ekle -->
 <script>
@@ -29,7 +28,7 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
 
-        const baseURL = "https://localhost:7203/api/auth/login";
+        const baseURL = "https://localhost:7099/api/auth/login";
 
         try {
             const response = await fetch(baseURL, {
@@ -37,7 +36,8 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ email:email, password:password })
+                body: JSON.stringify({ email:email, password:password }),
+                credentials:"include"
             })
 
             const responseData = await response.json(); // Hata mesajlarını yakalamak için ekledik
@@ -45,7 +45,7 @@
             if (!response.ok) {
                 console.error("Sunucudan gelen hata:", responseData);
                 throw new Error(responseData.error || "Kullanıcı adı veya şifre yanlış.");
-                
+
             }
             console.log("Giriş Başarılı");
             alert("Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...");

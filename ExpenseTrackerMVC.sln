@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Business", "Business\Business.csproj", "{4417E575-6374-42BF-A21E-84169F9AD517}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpenseTrackerAPI", "ExpenseTrackerAPI\ExpenseTrackerAPI.csproj", "{C64BABDA-BDDA-48E3-ABB3-F7D900E8D160}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{4417E575-6374-42BF-A21E-84169F9AD517}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4417E575-6374-42BF-A21E-84169F9AD517}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4417E575-6374-42BF-A21E-84169F9AD517}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C64BABDA-BDDA-48E3-ABB3-F7D900E8D160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C64BABDA-BDDA-48E3-ABB3-F7D900E8D160}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C64BABDA-BDDA-48E3-ABB3-F7D900E8D160}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C64BABDA-BDDA-48E3-ABB3-F7D900E8D160}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

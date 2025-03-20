@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using ExpenseTrackerMVC.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -18,8 +18,10 @@ namespace ExpenseTrackerMVC.Controllers
 
         public IActionResult Index()
         {
+         
             return View();
         }
+
 
         public IActionResult Privacy()
         {

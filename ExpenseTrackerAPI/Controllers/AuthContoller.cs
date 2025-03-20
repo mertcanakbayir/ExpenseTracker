@@ -33,7 +33,7 @@ namespace ExpenseTrackerMVC.Controllers.Api
             {
                 HttpOnly = true,
                 Secure = true,  // HTTPS zorunlu
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddHours(2)
             };
 
@@ -48,7 +48,7 @@ namespace ExpenseTrackerMVC.Controllers.Api
             var result = _authService.Register(registerDto);
             if (result == "Kullanıcı Kaydı Başarılı.")
             {
-                return Ok(new { message = result });
+                return Ok(new {Message="Register Succesful." });
             }
 
             return BadRequest(new { error = "Kayıt başarısız." });

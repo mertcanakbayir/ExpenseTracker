@@ -1,30 +1,20 @@
-﻿using Business.Abstract;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace ExpenseTrackerMVC.Controllers
+public class AuthController : Controller
 {
-    [Route("/[controller]")]
-    [ApiController]
-    public class AuthController : Controller
+    public IActionResult Login()
     {
-        private readonly IAuthService _authService;
+        return View();
+    }
 
-        public AuthController(IAuthService authService)
-        {
-            _authService = authService;
-        }
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete("AuthToken");
+        return RedirectToAction("Login");
+    }
 
-        [HttpGet("login")]
-        public IActionResult Login()
-        {
-            return View();
-        }
-        [HttpGet("register")]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-       
+    public IActionResult Register()
+    {
+        return View();
     }
 }
