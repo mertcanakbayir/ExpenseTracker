@@ -5,7 +5,7 @@ namespace Business.Abstract
 {
     public interface IAuthService
     {
-        string Register(RegisterDto registerDto);
+        List<string> Register(RegisterDto registerDto);
 
         AccessToken Login(LoginDto loginDto);
 

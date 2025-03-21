@@ -1,37 +1,121 @@
-﻿@model Core.DTOs.RegisterDto
+﻿@model Core.DTOs.LoginDto
 
 @{
     ViewData["Title"] = "Kayıt Ol";
 }
 
-<h2>Kayıt Ol</h2>
 
-<form id="registerForm">
-    <div class="form-group">
-        <label>Username:</label>
-        <input type="text" id="username" class="form-control" required />
-    </div>
-    <div class="form-group">
-        <label>Email:</label>
-        <input type="email" id="email" class="form-control" required />
-    </div>
-    <div class="form-group">
-        <label>Şifre:</label>
-        <input type="password" id="password" class="form-control" required />
-    </div>
-    <button type="submit" class="btn btn-success">Kayıt Ol</button>
-</form>
+<!-- Form yapısı düzeltildi (iç içe formlar kaldırıldı) -->
+<div class="container min-vh-100 d-flex flex-column justify-content-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+            <!-- Logo ve Header -->
+            <div class="text-center mb-5">
+                <i class="bi bi-building display-4 text-primary bg-white p-4 rounded-circle shadow-sm"></i>
+                <h1 class="h2 mt-4 fw-bold text-dark">Expense Tracker</h1>
+                <p class="text-muted mt-2">Lütfen gerekli bilgileri doldurarak kayıt olun.</p>
+            </div>
 
-<p>Zaten hesabınız var mı? <a asp-action="Login" asp-controller="Auth">Giriş Yap</a></p>
+            <!-- Login Card -->
+            <form id="loginForm">
+                <!-- Form burada başlıyor -->
+                <div class="card border-0 shadow-lg" style="background-color: #f8f9fa;">
+                    <div class="card-body p-5">
+                        <!-- Email Input -->
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">E-posta</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope text-muted"></i>
+                                </span>
+                                <input type="email" id="email" class="form-control border-start-0" placeholder="ornek@firma.com">
+                            </div>
+                        </div>  <div class="mb-4">
+                            <label class="form-label fw-medium">Kullanıcı Adı</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-person-circle text-muted"></i>
+                                </span>
+                                <input type="text" id="username" class="form-control border-start-0" placeholder="Kullanıcı Adınız">
+                            </div>
+                        </div>
 
+                        <!-- Password Input -->
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Şifre</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-shield-lock text-muted"></i>
+                                </span>
+                                <input type="password" id="password" class="form-control border-start-0" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <!-- Remember & Forgot -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox">
+                                <label class="form-check-label text-muted small">Beni Hatırla</label>
+                            </div>
+                            <a href="#" class="small text-decoration-none">Şifremi Unuttum</a>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Kayıt Ol
+                        </button>
+
+                        <!-- Kayıt Ol Bağlantısı -->
+                        <div class="text-center mt-3">
+                            <p class="text-muted small mb-0">
+                                Hesabınız zaten var mı?
+                                <a href="/Auth/Login" class="text-primary text-decoration-none fw-medium">Hemen Giriş Yapın</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer bg-transparent border-0 pt-2 pb-3 text-center">
+                        <p class="text-muted small mb-0">
+                            © 2024 Expense Tracker. Tüm hakları saklıdır.<br>
+                            <a href="#" class="text-decoration-none me-3">Kullanım Şartları</a>
+                            <a href="#" class="text-decoration-none">Gizlilik Politikası</a>
+                        </p>
+                    </div>
+                </div>
+            </form> <!-- Form burada bitiyor -->
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap Icons CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<!-- Özel Stiller -->
+<style>
+    body {
+        background-color: #e3f2fd !important;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+</style>
+<!-- JavaScript kodlarını buraya ekle -->
 <script>
-    document.getElementById("registerForm").addEventListener("submit", async function (event) {
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        const username = document.getElementById("username").value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
-
+        const username = document.getElementById("username").value;
         const baseURL = "https://localhost:7099/api/auth/register";
 
         try {
@@ -40,24 +124,34 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ username: username, email: email, password: password }),
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    username: username
+                }),
                 credentials: "include"
             });
 
             const responseData = await response.json();
 
             if (!response.ok) {
-                console.error("Sunucudan gelen hata:", responseData);
-                throw new Error(responseData.error || "Kayıt işlemi başarısız.");
+                if (responseData.errors && Array.isArray(responseData.errors)) {
+                    alert(responseData.errors.join("\n"));
+                } else {
+                    alert(responseData.message || "Kayıt başarısız");
+                }
+                return;
             }
 
-            console.log("Kayıt Başarılı");
-            alert("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
+            console.log("Başarılı yanıt:", responseData);
+
+            alert("Kayıt Başarılı! Giriş Ekranına Yönlendiriliyorsunuz...");
             window.location.href = "/Auth/Login";
 
         } catch (error) {
-            console.error("Kayıt Hatası:", error.message);
-            alert(error.message);
+            console.error("Hata:", error);
+            alert("Bir hata oluştu: " + error.message);
         }
     });
 </script>
+

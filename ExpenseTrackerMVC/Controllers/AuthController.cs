@@ -4,6 +4,7 @@ public class AuthController : Controller
 {
     public IActionResult Login()
     {
+        ViewBag.HideNavbar = true;
         return View();
     }
 
@@ -15,6 +16,7 @@ public class AuthController : Controller
 
     public IActionResult Register()
     {
+        ViewBag.HideNavbar = true;
         return View();
     }
 }

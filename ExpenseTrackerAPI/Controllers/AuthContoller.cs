@@ -46,12 +46,14 @@ namespace ExpenseTrackerMVC.Controllers.Api
         public IActionResult Register([FromBody] RegisterDto registerDto)
         {
             var result = _authService.Register(registerDto);
-            if (result == "Kullanıcı Kaydı Başarılı.")
+
+            if (result.Count == 1 && result[0] == "Kullanıcı Kaydı Başarılı.")
             {
-                return Ok(new {Message="Register Succesful." });
+                return Ok(new { Message = "Register Successful." });
             }
 
-            return BadRequest(new { error = "Kayıt başarısız." });
+            return BadRequest(new { Errors = result });
         }
+
     }
 }
