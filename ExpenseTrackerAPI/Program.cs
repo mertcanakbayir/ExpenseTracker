@@ -40,16 +40,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.Events = new JwtBearerEvents
         {
-            OnAuthenticationFailed = context =>
+            OnMessageReceived = context =>
             {
-                Console.WriteLine($"🚨 JWT Doğrulama Hatası: {context.Exception.Message}");
+                if (context.Request.Cookies.ContainsKey("AuthToken"))
+                {
+                    context.Token = context.Request.Cookies["AuthToken"];
+                }
                 return Task.CompletedTask;
             }
         };
-
-
-
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,

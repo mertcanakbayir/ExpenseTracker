@@ -54,6 +54,35 @@ namespace Core.Security.JWT
             };
 
         }
+        public Guid? ValidateToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return null;
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_jwtSettings.Key);
+
+            try
+            {
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
 
     }
