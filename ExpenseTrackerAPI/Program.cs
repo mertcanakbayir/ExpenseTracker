@@ -30,6 +30,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenHelper, TokenHelper>();
+builder.Services.AddScoped<IExpenseRepository,ExpenseRepository>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+
 
 builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
 builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();

@@ -7,7 +7,7 @@ namespace DAL.Concrete
     public class BaseRepository<TEntity, TContext> : IBaseRepository<TEntity> where TEntity : class
         where TContext : DbContext
     {
-        private readonly ExpenseContext _expenseContext;
+        protected readonly ExpenseContext _expenseContext;
 
         public BaseRepository(ExpenseContext expenseContext)
         {
@@ -32,12 +32,12 @@ namespace DAL.Concrete
             return _expenseContext.Set<TEntity>().Any(filter);
         }
 
-        public TEntity Get(Expression<Func<TEntity, bool>> filter)
+        public virtual TEntity Get(Expression<Func<TEntity, bool>> filter)
         {
             return _expenseContext.Set<TEntity>().Where(filter).FirstOrDefault();
         }
 
-        public List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null)
+        public virtual List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null)
         {
             return _expenseContext.Set<TEntity>().ToList();
         }
