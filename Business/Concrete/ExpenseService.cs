@@ -15,6 +15,7 @@ namespace Business.Concrete
         public void Add(ExpenseDto expenseDto)
         {
             var newExpense = new Expense { 
+            Title = expenseDto.Title,
             Description = expenseDto.Description,
             Amount = expenseDto.Amount,
             ExpenseDate = expenseDto.ExpenseDate,
@@ -42,6 +43,7 @@ namespace Business.Concrete
             return expenses.Select(e => new ExpenseDto
             {
                 Id = e.Id,
+                Title = e.Title,
                 Description = e.Description,
                 Amount = e.Amount,
                 ExpenseDate = e.ExpenseDate,
@@ -72,7 +74,7 @@ namespace Business.Concrete
             {
                 throw new Exception("Expense bulunamadı!");
             }
-
+            existingExpense.Title = expense.Title;
             existingExpense.Description = expense.Description;
             existingExpense.Amount = expense.Amount;
             existingExpense.ExpenseDate = expense.ExpenseDate;

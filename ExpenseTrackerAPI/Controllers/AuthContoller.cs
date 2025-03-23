@@ -1,4 +1,5 @@
-﻿using Business.Abstract;
+﻿using System.Security.Claims;
+using Business.Abstract;
 using Business.Concrete;
 using Core.DTOs;
 using Core.Security.JWT;
@@ -83,8 +84,10 @@ namespace ExpenseTrackerMVC.Controllers.Api
                 return NotFound(new { message = "User not found" });
             }
 
-            return Ok(new { user.Username, user.Email });
+            return Ok(new { user.Id,user.Username, user.Email });
         }
+
+
 
         [HttpPost("logout")]
         public IActionResult Logout()

@@ -44,13 +44,15 @@ namespace DAL.Concrete
 
         public void Update(TEntity entity)
         {
-            var existingEntity = _expenseContext.Set<TEntity>().Find(EF.Property<Guid>(entity, "Id"));
+            var entry = _expenseContext.Entry(entity);
+            var id = entry.Property("Id").CurrentValue; 
+
+            var existingEntity = _expenseContext.Set<TEntity>().Find(id);
 
             if (existingEntity == null)
                 throw new KeyNotFoundException("Güncellenecek nesne veritabanında bulunamadı.");
 
             _expenseContext.Entry(existingEntity).CurrentValues.SetValues(entity);
-
             _expenseContext.SaveChanges();
         }
     }

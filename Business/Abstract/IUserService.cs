@@ -13,5 +13,7 @@ namespace Business.Abstract
         List<UserDto> GetAll();
 
         UserDto Get(Guid id);
+
+
     }
 }

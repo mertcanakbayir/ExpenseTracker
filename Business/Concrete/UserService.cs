@@ -69,6 +69,7 @@ namespace Business.Concrete
 
             return new UserDto
             {
+                Id = id,
                 Username = user.Username,
                 Email = user.Email,
                 RoleId = user.RoleId,

@@ -18,17 +18,36 @@ namespace ExpenseTrackerAPI.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var expenses = _expenseService.GetAll();
-            return Ok(expenses);
+            try
+            {
+                var expenses = _expenseService.GetAll();
+                return Ok(expenses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+           
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(Guid id) {
         var expense=_expenseService.GetByCategory(id);
-            if (expense == null) {
-            return NotFound("Expense bulunamadı.");
+
+            try
+            {
+                if (expense == null)
+                {
+                    return NotFound("Expense bulunamadı.");
+                }
+                return Ok(expense);
+
             }
-            return Ok(expense);
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }        
         }
 
         [HttpPost("add")]
@@ -43,7 +62,6 @@ namespace ExpenseTrackerAPI.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
-                throw;
             }
 
         }
