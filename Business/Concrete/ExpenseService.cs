@@ -8,9 +8,11 @@ namespace Business.Concrete
     public class ExpenseService : IExpenseService
     {
         private readonly IExpenseRepository _expenseRepository;
-        public ExpenseService(IExpenseRepository expenseRepository)
+        private readonly ICurrentUserService _currentUserService;
+        public ExpenseService(IExpenseRepository expenseRepository, ICurrentUserService currentUserService)
         {
             _expenseRepository = expenseRepository;
+            _currentUserService = currentUserService;
         }
         public void Add(ExpenseDto expenseDto)
         {
@@ -20,7 +22,7 @@ namespace Business.Concrete
             Amount = expenseDto.Amount,
             ExpenseDate = expenseDto.ExpenseDate,
             CategoryId = expenseDto.CategoryId,
-            UserId = expenseDto.UserId,
+            UserId = _currentUserService.UserId,
             };
 
             _expenseRepository.Add(newExpense);
@@ -28,7 +30,9 @@ namespace Business.Concrete
 
         public void Delete(Guid id)
         {
-            var expense=_expenseRepository.Get(e=>e.Id == id);
+            var currentUserId= _currentUserService.UserId;
+
+            var expense=_expenseRepository.Get(e=>e.Id == id && e.UserId==currentUserId);
             if(expense==null)
             {
                 throw new Exception("Expense Bulunamadı!");
@@ -39,7 +43,9 @@ namespace Business.Concrete
 
         public List<ExpenseDto> GetAll()
         {
-           var expenses = _expenseRepository.GetAll();
+            var currentUserId=_currentUserService.UserId;
+           
+           var expenses = _expenseRepository.GetAll(e=>e.UserId==currentUserId);
             return expenses.Select(e => new ExpenseDto
             {
                 Id = e.Id,
@@ -48,13 +54,14 @@ namespace Business.Concrete
                 Amount = e.Amount,
                 ExpenseDate = e.ExpenseDate,
                 CategoryId = e.CategoryId,
-                UserId = e.UserId
+                //UserId = e.UserId
             }).ToList();
         }
 
         public List<ExpenseDto> GetByCategory(Guid categoryId)
         {
-            var expenses = _expenseRepository.GetByCategory(e=>e.CategoryId==categoryId);
+            var currentUser= _currentUserService.UserId;
+            var expenses = _expenseRepository.GetByCategory(e=>e.CategoryId==categoryId && e.UserId==currentUser);
             return expenses.Select(e => new ExpenseDto
             {
                 Id = e.Id,
@@ -62,7 +69,6 @@ namespace Business.Concrete
                 Amount = e.Amount,
                 ExpenseDate = e.ExpenseDate,
                 CategoryId = e.CategoryId,
-                UserId = e.UserId
             }).ToList();
         }
 

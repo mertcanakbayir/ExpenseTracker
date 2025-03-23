@@ -112,13 +112,14 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-           
-            if (!window.location.pathname.toLowerCase().includes("/auth/login")) {
+            const currentPath = window.location.pathname.toLowerCase();
+            // Login ve Register sayfalarında bu script'i çalıştırma
+            if (!currentPath.includes("/auth/login") && !currentPath.includes("/auth/register")) {
                 const usernameElement = document.getElementById("username");
                 const logoutElement = document.getElementById("logout");
                 const userInfoModal = document.getElementById('userInfoModal');
 
-                // Kullanıcı bilgilerini getiren fonksiyo
+                // Kullanıcı bilgilerini getiren fonksiyon
                 function fetchUserInfo() {
                     fetch('https://localhost:7099/api/auth/user-info', {
                         credentials: 'include'
@@ -133,9 +134,7 @@
                         return response.json();
                     })
                     .then(user => {
-                        if (!user) return; 
-
-                      
+                        if (!user) return;
                         if (usernameElement) {
                             usernameElement.innerHTML = `
                                 <i class="bi bi-person-circle me-1"></i>
@@ -170,8 +169,7 @@
                     });
                 }
 
-              
-                fetchUserInfo();
+                fetchUserInfo(); 
             }
         });
     </script>

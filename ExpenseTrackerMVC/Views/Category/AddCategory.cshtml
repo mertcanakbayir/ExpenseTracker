@@ -1,0 +1,139 @@
+﻿@{
+    ViewData["Title"] = "Yeni Kategori Ekle";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Yeni Kategori Ekle
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form id="addCategoryForm">
+                        <!-- Kategori Adı -->
+                        <div class="mb-4">
+                            <label for="categoryName" class="form-label fw-medium">Kategori Adı <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="categoryName"
+                                   name="categoryName"
+                                   required
+                                   placeholder="Kategori Adı Girin">
+                            <div class="invalid-feedback">Lütfen geçerli bir kategori adı giriniz.</div>
+                        </div>
+                        <!-- Hata Mesajı -->
+                        <div id="formError" class="alert alert-danger d-none mb-4"></div>
+
+                        <!-- Butonlar -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-controller="Home" asp-action="Index"
+                               class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>İptal
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save me-2"></i>Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('addCategoryForm');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                try {
+                    const userId = await getUserId();
+                    if (!userId) {
+                        throw new Error("Kullanıcı kimliği alınamadı, lütfen giriş yapın.");
+                    }
+
+                    const formData = {
+                        categoryName: document.getElementById('categoryName').value.trim()
+                    };
+
+                    const response = await fetch('https://localhost:7099/api/category/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData),
+                        credentials: 'include'
+                    });
+
+                    // Önce response'u text olarak oku
+                    const responseText = await response.text();
+
+                    let responseData;
+                    try {
+                        responseData = JSON.parse(responseText); // JSON'a çevirmeye çalış
+                    } catch {
+                        responseData = { title: responseText }; // JSON değilse ham metni kullan
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(responseData.title || `HTTP Hatası: ${response.status}`);
+                    }
+
+                    window.location.href = '/Home/Index';
+                } catch (error) {
+                    const errorElement = document.getElementById('formError');
+                    errorElement.textContent = `Hata: ${error.message}`;
+                    errorElement.classList.remove('d-none');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+
+        async function getUserId() {
+            try {
+                const response = await fetch('https://localhost:7099/api/auth/user-info', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Kullanıcı bilgisi alınamadı');
+                }
+
+                return (await response.json()).id;
+
+            } catch (error) {
+                console.error('Kullanıcı ID alınamadı:', error);
+                return null;
+            }
+        }
+    </script>
+}
+
+    <style>
+        .form-control-lg {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+        }
+
+        .card-header {
+            border-radius: 1rem 1rem 0 0;
+        }
+    </style>
+}

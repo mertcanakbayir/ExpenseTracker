@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExpenseTrackerMVC.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class ExpenseController : Controller
+    public class CategoryController : Controller
     {
-        public IActionResult AddExpense()
+        public IActionResult AddCategory()
         {
             return View();
         }

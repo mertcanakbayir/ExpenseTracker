@@ -19,13 +19,13 @@ namespace DAL.Concrete
                 .Include(e => e.Category)
                 .AsQueryable();
 
-            // Soft delete filtresi
+           
             if (!includeInactive)
             {
                 query = query.Where(e => e.IsActive);
             }
 
-            // Kullanıcı filtresi
+           
             if (filter != null)
             {
                 query = query.Where(filter);

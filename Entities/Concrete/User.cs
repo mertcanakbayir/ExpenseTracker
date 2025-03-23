@@ -14,5 +14,7 @@
         public virtual Role Role { get; set; }
 
         public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+
+        public virtual ICollection<Category> Categories { get; set; }
     }
 }

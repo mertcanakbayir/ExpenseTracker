@@ -56,6 +56,10 @@ namespace DAL
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.CategoryName).IsRequired().HasMaxLength(50);
 
+                entity.HasOne(c => c.User)
+                .WithMany(u => u.Categories)
+                .HasForeignKey(c => c.UserId);
+
             });
 
             modelBuilder.Entity<Role>(entity =>
