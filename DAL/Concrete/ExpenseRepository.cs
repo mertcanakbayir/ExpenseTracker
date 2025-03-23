@@ -11,20 +11,45 @@ namespace DAL.Concrete
         {
         }
 
-        public override List<Expense> GetAll(Expression<Func<Expense, bool>> filter = null)
+        public override List<Expense> GetAll(
+           Expression<Func<Expense, bool>> filter = null,
+           bool includeInactive = false)
         {
-            return filter == null
-                ? _expenseContext.Expenses.Include(e => e.Category).ToList()
-                : _expenseContext.Expenses.Include(e => e.Category).Where(filter).ToList();
-        }
-
-        public List<Expense> GetByCategory(Expression<Func<Expense, bool>> filter)
-        {
-            return _expenseContext.Expenses
+            var query = _expenseContext.Expenses
                 .Include(e => e.Category)
-                .Where(filter)
-                .ToList();
+                .AsQueryable();
+
+            // Soft delete filtresi
+            if (!includeInactive)
+            {
+                query = query.Where(e => e.IsActive);
+            }
+
+            // Kullanıcı filtresi
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return query.ToList();
         }
 
+        public List<Expense> GetByCategory(
+            Expression<Func<Expense, bool>> filter,
+            bool includeInactive = false)
+        {
+            var query = _expenseContext.Expenses
+                .Include(e => e.Category)
+                .AsQueryable();
+
+            if (!includeInactive)
+            {
+                query = query.Where(e => e.IsActive);
+            }
+
+            return query.Where(filter).ToList();
+        }
     }
+
 }
+

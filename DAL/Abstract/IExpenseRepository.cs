@@ -6,6 +6,6 @@ namespace DAL.Abstract
 {
     public interface IExpenseRepository:IBaseRepository<Expense>
     {
-        List<Expense> GetByCategory(Expression<Func<Expense, bool>> filter);
+        List<Expense> GetByCategory(Expression<Func<Expense, bool>> filter, bool includeInactive = false);
     }
 }

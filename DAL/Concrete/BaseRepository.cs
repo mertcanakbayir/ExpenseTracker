@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Core.DAL;
+using Entities.Concrete;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Concrete
@@ -9,9 +10,9 @@ namespace DAL.Concrete
     {
         protected readonly ExpenseContext _expenseContext;
 
-        public BaseRepository(ExpenseContext expenseContext)
+        public BaseRepository(ExpenseContext expenseContlext)
         {
-            _expenseContext = expenseContext;
+            _expenseContext = expenseContlext;
         }
         public void Add(TEntity entity)
         {
@@ -22,25 +23,54 @@ namespace DAL.Concrete
 
         public void Delete(TEntity entity)
         {
-            var deletedEntity=_expenseContext.Entry(entity);
-            deletedEntity.State = EntityState.Deleted;
-            _expenseContext.SaveChanges();
+            if (entity is BaseEntity baseEntity)
+            {
+                baseEntity.IsActive = false; 
+                _expenseContext.Update(entity);
+                _expenseContext.SaveChanges();
+            }
+            else
+            {
+                throw new InvalidOperationException("TEntity must inherit from BaseEntity");
+            }
         }
+
 
         public bool Exists(Expression<Func<TEntity, bool>> filter)
         {
             return _expenseContext.Set<TEntity>().Any(filter);
         }
 
-        public virtual TEntity Get(Expression<Func<TEntity, bool>> filter)
+        public virtual TEntity Get(Expression<Func<TEntity, bool>> filter, bool includeInactive = false)
         {
-            return _expenseContext.Set<TEntity>().Where(filter).FirstOrDefault();
+            var query = _expenseContext.Set<TEntity>().AsQueryable();
+
+            // Soft delete kontrolü sadece BaseEntity'den türeyenler ve includeInactive false ise
+            if (!includeInactive && typeof(BaseEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                query = query.Where(e => ((BaseEntity)(object)e).IsActive);
+            }
+
+            return query.FirstOrDefault(filter);
         }
 
-        public virtual List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null)
+        public virtual List<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null, bool includeInactive = false)
         {
-            return _expenseContext.Set<TEntity>().ToList();
+            var query = _expenseContext.Set<TEntity>().AsQueryable();
+
+            if (!includeInactive && typeof(BaseEntity).IsAssignableFrom(typeof(TEntity)))
+            {
+                query = query.Where(e => ((BaseEntity)(object)e).IsActive);
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return query.ToList();
         }
+
 
         public void Update(TEntity entity)
         {
