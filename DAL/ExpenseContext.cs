@@ -58,7 +58,8 @@ namespace DAL
 
                 entity.HasOne(c => c.User)
                 .WithMany(u => u.Categories)
-                .HasForeignKey(c => c.UserId);
+                .HasForeignKey(c => c.UserId).
+                OnDelete(DeleteBehavior.Cascade);
 
             });
 

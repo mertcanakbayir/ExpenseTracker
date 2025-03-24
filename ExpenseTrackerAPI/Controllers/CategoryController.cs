@@ -34,6 +34,9 @@ namespace ExpenseTrackerAPI.Controllers
             {
             try
             {
+                if (string.IsNullOrWhiteSpace(categoryDto.CategoryName)) {
+                    return BadRequest("Kategori boş olamaz!");
+                }
                 _categoryService.Add(categoryDto);
                 return Ok("Category başarıyla eklendi.");
             }
@@ -54,7 +57,7 @@ namespace ExpenseTrackerAPI.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
-                throw;
+                
             }
         }
 
@@ -68,9 +71,10 @@ namespace ExpenseTrackerAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
-                throw;
+                return BadRequest(new { error = ex.Message });
+
             }
+
         }
     }
 }

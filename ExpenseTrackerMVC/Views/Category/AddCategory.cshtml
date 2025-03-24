@@ -119,8 +119,24 @@
                 return null;
             }
         }
+
+                async function getCategories() {
+            try {
+                const response = await fetch('https://localhost:7099/api/category', {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Kategori bilgisi alınamadı');
+                }
+                return (await response.json()).categoryName;
+            } catch (error) {
+                console.error('Kategoriler alınamadı!', error); 
+                return null;
+            }
+        }
     </script>
-}
+
 
     <style>
         .form-control-lg {

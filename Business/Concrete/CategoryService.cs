@@ -9,10 +9,12 @@ namespace Business.Concrete
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly ICurrentUserService _currentUserService;
-        public CategoryService(ICategoryRepository categoryRepository,ICurrentUserService currentUserService)
+        private readonly IExpenseRepository _expenseRepository;
+        public CategoryService(ICategoryRepository categoryRepository,ICurrentUserService currentUserService,IExpenseRepository expenseRepository)
         {
             _categoryRepository = categoryRepository;   
             _currentUserService = currentUserService;
+            _expenseRepository = expenseRepository;
         }
         public void Add(CategoryDto categoryDto)
         {
@@ -32,6 +34,12 @@ namespace Business.Concrete
             if (category == null) {
                 throw new Exception("Category bulunamadı!");
             }
+
+            bool hasExpenses = _expenseRepository.Exists(e=>e.CategoryId ==id && e.IsActive);
+            if (hasExpenses) {
+                throw new Exception("Bu kategoriye ait expense bulunduğundan silme işlemi yapılamaz.");
+            }
+
             _categoryRepository.Delete(category);
         }
 
