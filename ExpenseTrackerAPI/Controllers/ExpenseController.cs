@@ -52,6 +52,24 @@ namespace ExpenseTrackerAPI.Controllers
             }        
         }
 
+        [HttpGet("[action]/{id}")]
+        public IActionResult GetById(Guid id)
+        {
+            var expense = _expenseService.Get(id);
+            try
+            {
+                if(expense==null)
+                {
+                    return NotFound("Expense bulunamadı.");
+                }
+                return Ok(expense);
+            }
+            catch (Exception ex)
+            {
+                 return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("add")]
         public IActionResult Add(ExpenseDto expenseDto)
         {

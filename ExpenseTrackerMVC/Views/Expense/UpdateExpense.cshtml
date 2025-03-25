@@ -1,0 +1,268 @@
+﻿@{
+    ViewData["Title"] = "Gider Güncelle";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">
+                      
+                        <i class="bi bi-pencil-square me-2"></i>Gider Güncelle
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                   
+                    <form id="updateExpenseForm">
+                       
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-medium">Başlık <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="title"
+                                   name="title"
+                                   required
+                                   placeholder="Gider başlığını girin">
+                            <div class="invalid-feedback">Lütfen geçerli bir başlık giriniz</div>
+                        </div>
+
+                     
+                        <div class="mb-4">
+                            <label for="amount" class="form-label fw-medium">Miktar (₺) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-currency-exchange text-muted"></i>
+                                </span>
+                                <input type="number"
+                                       class="form-control form-control-lg"
+                                       id="amount"
+                                       name="amount"
+                                       step="0.01"
+                                       min="0"
+                                       required
+                                       placeholder="0.00">
+                            </div>
+                            <div class="invalid-feedback">Lütfen geçerli bir miktar giriniz</div>
+                        </div>
+
+                       
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-medium">Kategori <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-lg"
+                                    id="category"
+                                    name="category"
+                                    required>
+                                <option value="" disabled selected>Kategori seçiniz</option>
+                              
+                            </select>
+                            <div class="invalid-feedback">Lütfen bir kategori seçiniz</div>
+                        </div>
+
+                       
+                        <div class="mb-4">
+                            <label for="date" class="form-label fw-medium">Tarih <span class="text-danger">*</span></label>
+                            <input type="date"
+                                   class="form-control form-control-lg"
+                                   id="date"
+                                   name="date"
+                                   required
+                                   max="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            <div class="invalid-feedback">Lütfen geçerli bir tarih seçiniz</div>
+                        </div>
+
+                      
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-medium">Açıklama</label>
+                            <textarea class="form-control form-control-lg"
+                                      id="description"
+                                      name="description"
+                                      rows="3"
+                                      placeholder="Gider açıklamasını girin (isteğe bağlı)"></textarea>
+                        </div>
+
+                      
+                        <div id="formError" class="alert alert-danger d-none mb-4"></div>
+
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-controller="Home" asp-action="Index"
+                               class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>İptal
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save me-2"></i>Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          
+            const expenseId = getExpenseIdFromUrl();
+
+            if (!expenseId) {
+                alert("Geçersiz gider ID'si!");
+                window.location.href = '/Home/Index';
+                return;
+            }
+
+           
+            fetchCategories().then(() => {
+                fetchExpense(expenseId);
+            });
+
+            const form = document.getElementById('updateExpenseForm');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                try {
+                   
+                    const formData = {
+                        id: expenseId, 
+                        title: document.getElementById('title').value,
+                        amount: parseFloat(document.getElementById('amount').value),
+                        categoryId: document.getElementById('category').value,
+                        expenseDate: document.getElementById('date').value,
+                        description: document.getElementById('description').value,
+                        userId: await getUserId()
+                    };
+
+                    
+                    const response = await fetch(`https://localhost:7099/api/expense/${expenseId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData),
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.title || 'Güncelleme başarısız oldu');
+                    }
+
+                    window.location.href = '/Home/Index';
+                } catch (error) {
+                    const errorElement = document.getElementById('formError');
+                    errorElement.textContent = `Hata: ${error.message}`;
+                    errorElement.classList.remove('d-none');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+
+       
+        function getExpenseIdFromUrl() {
+            const pathArray = window.location.pathname.split('/');
+            return pathArray[pathArray.length - 1] || pathArray[pathArray.length - 2];
+        }
+
+        
+        async function fetchExpense(id) {
+            try {
+                const response = await fetch(`https://localhost:7099/api/expense/GetById/${id}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Gider verisi alınamadı');
+
+                const expense = await response.json();
+
+                
+                document.getElementById('title').value = expense.title;
+                document.getElementById('amount').value = expense.amount;
+                const date = new Date(expense.expenseDate);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                document.getElementById('date').value = date.toISOString().split('T')[0];
+               
+                document.getElementById('description').value = expense.description;
+
+                
+                const categorySelect = document.getElementById('category');
+                categorySelect.value = expense.categoryId;
+
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Gider verisi yüklenemedi!');
+                window.location.href = '/Home/Index';
+            }
+        }
+
+     
+        async function fetchCategories() {
+            try {
+                const response = await fetch('https://localhost:7099/api/category/', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Kategoriler alınamadı');
+
+                const categories = await response.json();
+                const categorySelect = document.getElementById('category');
+
+               
+                categorySelect.innerHTML = '<option value="" disabled selected>Kategori seçiniz</option>';
+
+              
+                categories.forEach(category => {
+                    const option = new Option(category.categoryName, category.id);
+                    categorySelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Kategori yükleme hatası:', error);
+                const errorElement = document.getElementById('formError');
+                errorElement.textContent = `Kategoriler yüklenemedi: ${error.message}`;
+                errorElement.classList.remove('d-none');
+            }
+        }
+
+      
+        async function getUserId() {
+            try {
+                const response = await fetch('https://localhost:7099/api/auth/user-info', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Kullanıcı bilgisi alınamadı');
+
+                const data = await response.json();
+                return data.id;
+
+            } catch (error) {
+                console.error('Kullanıcı ID alınamadı:', error);
+                return null;
+            }
+        }
+    </script>
+
+    <style>
+        .form-control-lg, .form-select-lg {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+        }
+
+        .card-header {
+            border-radius: 1rem 1rem 0 0;
+        }
+    </style>
+}

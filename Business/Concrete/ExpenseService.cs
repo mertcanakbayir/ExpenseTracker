@@ -72,6 +72,25 @@ namespace Business.Concrete
             }).ToList();
         }
 
+        public ExpenseDto Get(Guid id)
+        {
+            var currentUser = _currentUserService.UserId;
+            var expense = _expenseRepository.Get(e => e.Id == id && e.UserId == currentUser);
+
+            if (expense == null)
+                throw new KeyNotFoundException("Gider bulunamadı."); 
+
+            return new ExpenseDto
+            {
+                Id = expense.Id,
+                Title = expense.Title,
+                Description = expense.Description,
+                Amount = expense.Amount,
+                ExpenseDate = expense.ExpenseDate,
+                CategoryId = expense.CategoryId,
+            };
+        }
+
         public void Update(Guid id, ExpenseDto expense)
         {
             var existingExpense=_expenseRepository.Get(e=>e.Id==id);

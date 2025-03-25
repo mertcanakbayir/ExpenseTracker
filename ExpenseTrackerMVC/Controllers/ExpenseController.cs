@@ -11,5 +11,10 @@ namespace ExpenseTrackerMVC.Controllers
         {
             return View();
         }
+
+        public IActionResult UpdateExpense()
+        {
+            return View();
+        }
     }
 }

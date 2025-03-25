@@ -13,5 +13,8 @@ namespace Business.Abstract
         List<ExpenseDto> GetAll();
 
         List<ExpenseDto> GetByCategory(Guid id);
+       
+        ExpenseDto Get(Guid id);
+
     }
 }
