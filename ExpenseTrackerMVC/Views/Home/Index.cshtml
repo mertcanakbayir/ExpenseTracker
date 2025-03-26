@@ -3,16 +3,49 @@
 }
 
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h1 class="h3 fw-bold text-primary">
             <i class="bi bi-wallet2 me-2"></i>Gider Takip Listesi
         </h1>
-        <a asp-controller="Expense" asp-action="AddExpense" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Yeni Gider Ekle
-        </a>
-        </a> <a asp-controller="Category" asp-action="CategoryOperations" class="btn btn-warning">
-            <i class="bi bi-gear-lg me-2"></i>Kategori İşlemleri
-        </a>
+        <div class="d-flex gap-2">
+            <a asp-controller="Expense" asp-action="AddExpense" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Yeni Gider Ekle
+            </a>
+            <a asp-controller="Category" asp-action="CategoryOperations" class="btn btn-warning">
+                <i class="bi bi-gear-lg me-2"></i>Kategori İşlemleri
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtreleme Alanı -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select class="form-select" id="categoryFilter">
+                <option value="">Tüm Kategoriler</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="yearFilter">
+                <option value="">Tüm Yıllar</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="monthFilter">
+                <option value="">Tüm Aylar</option>
+                <option value="1">Ocak</option>
+                <option value="2">Şubat</option>
+                <option value="3">Mart</option>
+                <option value="4">Nisan</option>
+                <option value="5">Mayıs</option>
+                <option value="6">Haziran</option>
+                <option value="7">Temmuz</option>
+                <option value="8">Ağustos</option>
+                <option value="9">Eylül</option>
+                <option value="10">Ekim</option>
+                <option value="11">Kasım</option>
+                <option value="12">Aralık</option>
+            </select>
+        </div>
     </div>
 
     <div id="loading" class="text-center my-5">
@@ -27,11 +60,23 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchCategories();
-            fetchExpenses();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializePage();
         });
+
         let categoriesMap = {};
+
+        async function initializePage() {
+            try {
+                await fetchCategories();
+                addCategorySelect();
+                initializeYearDropdown();
+                setupEventListeners();
+                await applyFilters();
+            } catch (error) {
+                handleError(error);
+            }
+        }
 
         async function fetchCategories() {
             try {
@@ -42,80 +87,139 @@
                 if (!response.ok) throw new Error('Kategoriler alınamadı');
 
                 const categories = await response.json();
-
                 categoriesMap = categories.reduce((map, category) => {
                     map[category.id] = category.categoryName;
                     return map;
                 }, {});
             } catch (error) {
                 console.error('Kategori yükleme hatası:', error);
+                throw error;
             }
         }
 
-        async function fetchExpenses() {
+        function addCategorySelect() {
+            const categorySelect = document.getElementById("categoryFilter");
+            categorySelect.innerHTML = '<option value="">Tüm Kategoriler</option>';
+
+            Object.entries(categoriesMap).forEach(([id, name]) => {
+                const option = document.createElement("option");
+                option.value = id;
+                option.textContent = name;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function initializeYearDropdown() {
+            const yearSelect = document.getElementById("yearFilter");
+            const currentYear = new Date().getFullYear();
+            yearSelect.innerHTML = '<option value="">Tüm Yıllar</option>';
+
+            for (let y = currentYear + 1; y >= currentYear - 2; y--) {
+                const option = document.createElement("option");
+                option.value = y;
+                option.textContent = y;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+            document.getElementById("yearFilter").addEventListener("change", applyFilters);
+            document.getElementById("monthFilter").addEventListener("change", applyFilters);
+        }
+
+        async function applyFilters() {
             try {
-                const response = await fetch('https://localhost:7099/api/expense/', {
-                    credentials: 'include'
-                });
+                const categoryId = document.getElementById("categoryFilter").value;
+                const year = document.getElementById("yearFilter").value;
+                const month = document.getElementById("monthFilter").value;
 
-                if (!response.ok) throw new Error('Veriler alınamadı');
-                const expenses = await response.json();
-
-                document.getElementById('loading').classList.add('d-none');
-                renderExpenses(expenses);
+                await fetchExpenses(categoryId, year, month);
             } catch (error) {
                 handleError(error);
             }
         }
 
-        function renderExpenses(expenses) {
-            const container = document.getElementById('expense-container');
-            container.innerHTML = expenses.length ? generateExpenseCards(expenses) : getEmptyState();
+        async function fetchExpenses(categoryId, year, month) {
+            try {
+                showLoading();
+
+                const url = new URL('https://localhost:7099/api/expense/GetFilteredExpenses');
+                const params = {
+                    categoryId: categoryId || null,
+                    year: year || null,
+                    month: month || null
+                };
+
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== null && value !== "") {
+                        url.searchParams.append(key, value);
+                    }
+                });
+
+                const response = await fetch(url, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP Hatası! Status: ${response.status}`);
+                }
+
+                const expenses = await response.json();
+                renderExpenses(expenses);
+
+            } catch (error) {
+                handleError(error);
+            } finally {
+                hideLoading();
+            }
         }
 
-                function generateExpenseCards(expenses) {
-            return expenses.map(expense => {
-                const categoryName = categoriesMap[expense.categoryId] || 'Bilinmeyen Kategori';
+        function renderExpenses(expenses) {
+            const container = document.getElementById('expense-container');
+            if (expenses.length === 0) {
+                container.innerHTML = getEmptyState();
+                return;
+            }
 
-                return `
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 border-0 shadow-sm expense-card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="card-title fw-bold">${expense.title}</h5>
-                                    <span class="badge ${getCategoryBadgeStyle(categoryName)}">
-                                        ${categoryName}
+            container.innerHTML = expenses.map(expense => `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm expense-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title fw-bold">${expense.title}</h5>
+                                <span class="badge ${getCategoryBadgeStyle(expense.category?.categoryName)}">
+                                    ${expense.category?.categoryName || 'Bilinmeyen'}
+                                </span>
+                            </div>
+                            <p class="text-muted small mb-3">${expense.description || 'Açıklama bulunmamaktadır'}</p>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <span class="d-block text-success fw-bold fs-5">
+                                        ${expense.amount.toFixed(2)} ₺
                                     </span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        ${new Date(expense.expenseDate).toLocaleDateString('tr-TR')}
+                                    </small>
                                 </div>
-                                <p class="text-muted small mb-3">${expense.description || 'Açıklama bulunmamaktadır'}</p>
-                                <div class="d-flex justify-content-between align-items-end">
-                                    <div>
-                                        <span class="d-block text-success fw-bold fs-5">
-                                            ${expense.amount.toFixed(2)} ₺
-                                        </span>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar me-1"></i>
-                                            ${new Date(expense.expenseDate).toLocaleDateString('tr-TR')}
-                                        </small>
-                                    </div>
-                                    <div class="btn-group">
-                                        <a href="/Expense/UpdateExpense/${expense.id}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense('${expense.id}')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+                                <div class="btn-group">
+                                    <a href="/Expense/UpdateExpense/${expense.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense('${expense.id}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
-
-        function getCategoryBadgeStyle(category) {
+        function getCategoryBadgeStyle(categoryName) {
             const styles = {
                 'Yemek': 'bg-warning text-dark',
                 'Ulaşım': 'bg-info text-white',
@@ -123,7 +227,7 @@
                 'Eğlence': 'bg-danger text-white',
                 'Diğer': 'bg-secondary text-white'
             };
-            return `category-badge ${styles[category] || 'bg-primary text-white'}`;
+            return `category-badge ${styles[categoryName] || 'bg-primary text-white'}`;
         }
 
         function getEmptyState() {
@@ -136,20 +240,28 @@
         }
 
         async function deleteExpense(id) {
-            if (confirm('Bu gideri silmek istediğinize emin misiniz?')) {
-                try {
-                    const response = await fetch(`https://localhost:7099/api/expense/${id}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
+            if (!confirm('Bu gideri silmek istediğinize emin misiniz?')) return;
 
-                    if (response.ok) {
-                        fetchExpenses();
-                    }
-                } catch (error) {
-                    handleError(error);
-                }
+            try {
+                const response = await fetch(`https://localhost:7099/api/expense/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Silme işlemi başarısız oldu');
+
+                await applyFilters();
+            } catch (error) {
+                handleError(error);
             }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('d-none');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('d-none');
         }
 
         function handleError(error) {
@@ -157,7 +269,7 @@
             const errorAlert = document.getElementById('error-alert');
             errorAlert.textContent = `Hata: ${error.message}`;
             errorAlert.classList.remove('d-none');
-            document.getElementById('loading').classList.add('d-none');
+            setTimeout(() => errorAlert.classList.add('d-none'), 5000);
         }
     </script>
 

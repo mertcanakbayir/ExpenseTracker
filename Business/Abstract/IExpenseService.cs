@@ -16,5 +16,7 @@ namespace Business.Abstract
        
         ExpenseDto Get(Guid id);
 
+        List<ExpenseDto> GetFiltered(Guid? categoryId, int? year, int? month);
+
     }
 }

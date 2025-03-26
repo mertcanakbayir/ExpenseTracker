@@ -17,7 +17,7 @@ namespace ExpenseTrackerAPI.Controllers
             _expenseService = expenseService;
         }
 
-        [HttpGet]
+        [HttpGet("[action]")]
         public IActionResult GetAll()
         {
             try
@@ -111,6 +111,28 @@ namespace ExpenseTrackerAPI.Controllers
             {
                 return BadRequest(ex.Message);
                 throw;
+            }
+        }
+
+        [HttpGet("[action]")]
+        public IActionResult GetFilteredExpenses([FromQuery] Guid? categoryId, [FromQuery] int? year, [FromQuery] int? month)
+        {
+            try
+            {
+               var expenses=_expenseService.GetFiltered(categoryId, year, month);
+                return Ok(expenses);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                return BadRequest(new { Error = ex.ParamName, ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Error = ex.ParamName, ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "InternalServerError", ex.Message });
             }
         }
     }

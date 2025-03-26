@@ -49,6 +49,30 @@ namespace DAL.Concrete
 
             return query.Where(filter).ToList();
         }
+
+        public List<Expense> GetFiltered(Guid? categoryId = null, int? year = null, int? month = null, bool includeInactive = false)
+        {
+            var query=_expenseContext.Expenses.Include(e => e.Category).AsQueryable();
+
+            if (!includeInactive) { 
+            query=query.Where(e => e.IsActive);
+            }
+
+            if (categoryId.HasValue)
+            {
+                query=query.Where(e=>e.CategoryId == categoryId.Value);
+            }
+
+            if (year.HasValue) {
+            query=query.Where(e=>e.ExpenseDate.Year == year.Value);
+            }
+
+            if (month.HasValue) {
+            query=query.Where(e=>e.ExpenseDate.Month == month.Value);
+            }
+
+            return query.ToList();
+        }
     }
 
 }

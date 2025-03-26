@@ -65,6 +65,7 @@ namespace Business.Concrete
             return expenses.Select(e => new ExpenseDto
             {
                 Id = e.Id,
+                Title= e.Title,
                 Description = e.Description,
                 Amount = e.Amount,
                 ExpenseDate = e.ExpenseDate,
@@ -107,6 +108,24 @@ namespace Business.Concrete
 
             _expenseRepository.Update(existingExpense);
             
+        }
+
+        public List<ExpenseDto> GetFiltered(Guid? categoryId, int? year, int? month)
+        {
+            if(month.HasValue && (month<1 || month>12))
+            {
+                throw new ArgumentOutOfRangeException("Geçersiz ay değeri.");
+            }
+            var expense= _expenseRepository.GetFiltered(categoryId, year, month);
+
+            return expense.Select(e => new ExpenseDto {
+                Id = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                Amount = e.Amount,
+                ExpenseDate = e.ExpenseDate,
+                CategoryId = e.CategoryId
+            }).ToList();
         }
     }
 }
